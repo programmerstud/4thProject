@@ -34,7 +34,9 @@ namespace _4thProject
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
             Draw(e.Graphics);
-
+            
+            if (k != 50)
+            {
             Thread tm1 = new Thread(TrL);
             tm1.Start();
 
@@ -48,6 +50,7 @@ namespace _4thProject
             tm4.Start();
 
             Thread.Sleep(1000);
+            }
 
         }
         private void Draw(Graphics g)
