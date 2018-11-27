@@ -11,6 +11,7 @@ using System.Threading;
 
 namespace _4thProject
 {
+
     public partial class MainForm : Form
     {
         TrafficLight tl1;
@@ -18,7 +19,7 @@ namespace _4thProject
         Pedestrian ped1;
         ES help;
         public delegate void MyDelegate();
-        int k;
+        volatile bool isClose = false;
 
         public MainForm()
         {
@@ -28,29 +29,11 @@ namespace _4thProject
             au1 = new Auto(80, Width);
             ped1 = new Pedestrian(40, Height);
             help = new ES(60, Width);
-            k = 0;
         }
 
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
             Draw(e.Graphics);
-            
-            if (k != 50)
-            {
-            Thread tm1 = new Thread(TrL);
-            tm1.Start();
-
-            Thread tm2 = new Thread(Car);
-            tm2.Start();
-
-            Thread tm3 = new Thread(PedMove);
-            tm3.Start();
-
-            Thread tm4 = new Thread(Dang);
-            tm4.Start();
-
-            Thread.Sleep(1000);
-            }
 
         }
         private void Draw(Graphics g)
@@ -83,64 +66,106 @@ namespace _4thProject
             }
             if (help.IsOn == true && help.X - 50 > 0)
             {
-                g.FillRectangle(Brushes.Red, new Rectangle(help.X, Height/2, 50, Height / 8));
+                g.FillRectangle(Brushes.Red, new Rectangle(help.X, Height / 2, 50, Height / 8));
             }
 
         }
         private void Car(object obj)
         {
-            if (au1.X + 50 < Width)
+            while (!isClose)
             {
-                if (au1.X + 100 < Width / 4 || (tl1.red || (!tl1.red && au1.X + 100 > Width / 4)) && ped1.On == false || au1.X + 100 > Width *3 / 4)
-                    au1.Move();     
+                if (au1.X + 50 < Width)
+                {
+                    if (au1.X + 100 < Width / 4 || (tl1.red || (!tl1.red && au1.X + 100 > Width / 4)) && ped1.On == false || au1.X + 100 > Width * 3 / 4)
+                        au1.Move();
+                }
+                else
+                    au1 = new Auto(60, Width);
+                BeginInvoke(new MyDelegate(Refresh));
+
+                Thread.Sleep(1000);
             }
-            else
-                au1 = new Auto(60, Width);
-            BeginInvoke(new MyDelegate(Refresh));
         }
         private void TrL(object obj)
         {
-            if (k%7 == 0)
+            while (!isClose)
+            {
                 tl1.Change();
-            k++;
-            BeginInvoke(new MyDelegate(Refresh));
+                BeginInvoke(new MyDelegate(Refresh));
+
+                Thread.Sleep(7000);
+            }
         }
         private void PedMove(object obj)
         {
-            if (ped1.Y + 50 < Height)
+            while (!isClose)
             {
-                if ((!tl1.red || ped1.Y > Height / 2) && (au1.X < Width / 4 || au1.X > Width * 3 / 4) || (help.X>Width / 4 && help.X < Width * 3 / 4 && ped1.Y > Height / 2 && ped1.Y < Height * 5 / 8))
+                if (ped1.Y + 50 < Height)
                 {
-                    ped1.Move();
-                    ped1.On = true;
+                    if ((!tl1.red || ped1.Y > Height / 2) && (au1.X < Width / 4 || au1.X > Width * 3 / 4) || (help.X > Width / 4 && help.X < Width * 3 / 4 && ped1.Y > Height / 2 && ped1.Y < Height * 5 / 8))
+                    {
+                        ped1.Move();
+                        ped1.On = true;
+                    }
+                    else
+                        ped1.On = false;
                 }
                 else
+                {
                     ped1.On = false;
+                    ped1 = new Pedestrian(40, Height);
+                }
+                BeginInvoke(new MyDelegate(Refresh));
+
+                Thread.Sleep(1000);
             }
-            else
-            {
-                ped1.On = false;
-                ped1 = new Pedestrian(40, Height);
-            }
-            BeginInvoke(new MyDelegate(Refresh));
         }
         private void Dang(object obj)
         {
-            if (help.IsOn == false)
+            while (!isClose)
             {
-                help = new ES(60, Width);
-                help.Dangerous();
-            }
-            else
-            {
-                if (help.X - 50 > 0)
+                if (help.IsOn == false)
                 {
-                    help.Move();
-                    BeginInvoke(new MyDelegate(Refresh));
+                    help = new ES(60, Width);
+                    help.Dangerous();
                 }
                 else
-                    help.IsOn = false;
+                {
+                    if (help.X - 50 > 0)
+                    {
+                        help.Move();
+                        BeginInvoke(new MyDelegate(Refresh));
+                    }
+                    else
+                        help.IsOn = false;
+                }
+
+                Thread.Sleep(1000);
             }
+        }
+
+        private void buttonSTART_Click(object sender, EventArgs e)
+        {
+            Thread tm1 = new Thread(TrL);
+            tm1.IsBackground = true;
+            tm1.Start();
+
+            Thread tm2 = new Thread(Car);
+            tm2.IsBackground = true;
+            tm2.Start();
+
+            Thread tm3 = new Thread(PedMove);
+            tm3.IsBackground = true;
+            tm3.Start();
+
+            Thread tm4 = new Thread(Dang);
+            tm4.IsBackground = true;
+            tm4.Start();
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            isClose = true;
         }
     }
 }

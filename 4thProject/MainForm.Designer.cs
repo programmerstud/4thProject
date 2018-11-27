@@ -28,7 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.buttonSTART = new System.Windows.Forms.Button();
             this.SuspendLayout();
+            // 
+            // buttonSTART
+            // 
+            this.buttonSTART.Location = new System.Drawing.Point(399, 12);
+            this.buttonSTART.Name = "buttonSTART";
+            this.buttonSTART.Size = new System.Drawing.Size(142, 30);
+            this.buttonSTART.TabIndex = 0;
+            this.buttonSTART.Text = "Start";
+            this.buttonSTART.UseVisualStyleBackColor = true;
+            this.buttonSTART.Click += new System.EventHandler(this.buttonSTART_Click);
             // 
             // MainForm
             // 
@@ -36,15 +47,19 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(963, 600);
+            this.Controls.Add(this.buttonSTART);
             this.DoubleBuffered = true;
             this.Name = "MainForm";
             this.Text = "ПешеходныйПереход";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.MainForm_Paint);
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private System.Windows.Forms.Button buttonSTART;
     }
 }
 
